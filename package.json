@@ -1,5 +1,5 @@
 {
-	"name": "obsidian-sample-plugin",
+	"name": "obsidian-node-factor",
 	"version": "1.0.0",
 	"description": "Customize factors effecting node size in graph.",
 	"main": "main.js",
