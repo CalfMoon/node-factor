@@ -24,26 +24,27 @@ export default class NodeFactor extends Plugin {
 				const start = performance.now();
 
 				const treeOptimizeMap: Map<string, number> = new Map();
-
 				nodes.forEach((node) => {
 					const weight = this.calcNodeWeight(node, treeOptimizeMap);
 					node.weight = weight;
 				});
 
-				// setInterval(() => {
-				// 	const treeOptimizeMap: Map<string, number> = new Map();
-				// 	nodes.forEach((node) => {
-				// 		const weight = this.calcNodeWeight(
-				// 			node,
-				// 			treeOptimizeMap,
-				// 		);
-				// 		node.weight = weight;
-				// 	});
-				// }, 10);
+				// this.calcLoop(nodes);
 
 				console.log(performance.now() - start);
 			}),
 		);
+	}
+
+	private calcLoop(nodes: ObsidianNode[]) {
+		setTimeout(() => {
+			const treeOptimizeMap: Map<string, number> = new Map();
+			nodes.forEach((node) => {
+				const weight = this.calcNodeWeight(node, treeOptimizeMap);
+				node.weight = weight;
+			});
+			this.calcLoop(nodes);
+		}, 10);
 	}
 
 	private calcNodeWeight(
