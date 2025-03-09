@@ -21,24 +21,82 @@ export default class NodeFactor extends Plugin {
 				const nodes: ObsidianNode[] = leaf.view.renderer.nodes;
 				if (nodes.length === 0) return;
 
-				setInterval(() => {
-					nodes.forEach((node) => {
-						const weight = this.calcNodeWeight(node);
-						node.weight = weight;
-					});
-				}, 1);
+				const start = performance.now();
+
+				const treeOptimizeMap: Map<string, number> = new Map();
+
+				nodes.forEach((node) => {
+					const weight = this.calcNodeWeight(node, treeOptimizeMap);
+					node.weight = weight;
+				});
+
+				// setInterval(() => {
+				// 	const treeOptimizeMap: Map<string, number> = new Map();
+				// 	nodes.forEach((node) => {
+				// 		const weight = this.calcNodeWeight(
+				// 			node,
+				// 			treeOptimizeMap,
+				// 		);
+				// 		node.weight = weight;
+				// 	});
+				// }, 10);
+
+				console.log(performance.now() - start);
 			}),
 		);
 	}
 
-	private calcNodeWeight(node: ObsidianNode): number {
+	private calcNodeWeight(
+		node: ObsidianNode,
+		treeOptimizeMap: Map<string, number>,
+	): number {
 		const settings = this.settings;
 		let weight = 0;
 
 		weight += Object.keys(node.reverse).length * settings.bwdMultiplier;
-		weight += Object.keys(node.forward).length * settings.fwdMultiplier;
+		if (settings.fwdTree) {
+			weight +=
+				this.fwdNodeTreeSize(node, node.id, treeOptimizeMap) *
+				settings.fwdMultiplier;
+		} else {
+			weight += Object.keys(node.forward).length * settings.fwdMultiplier;
+		}
 
 		return weight;
+	}
+
+	private fwdNodeTreeSize(
+		node: ObsidianNode,
+		id: string,
+		treeOptimizeMap: Map<string, number>,
+	): number {
+		let size = 0;
+
+		const sizeMap = treeOptimizeMap.get(node.id);
+
+		// the block below
+		if (sizeMap !== undefined) {
+			return sizeMap as number;
+		}
+
+		Object.entries(node.forward).forEach(([key, value]) => {
+			// @ts-ignore
+			const childNode: ObsidianNode = value.target;
+
+			// Prevents looping if A -> B -> C -> A
+			if (key === id) return size;
+
+			size++;
+			const childSize = this.fwdNodeTreeSize(
+				childNode,
+				id,
+				treeOptimizeMap,
+			);
+			size += childSize;
+		});
+
+		treeOptimizeMap.set(node.id, size);
+		return size;
 	}
 
 	async loadSettings() {
