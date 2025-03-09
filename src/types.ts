@@ -1,3 +1,10 @@
+export interface ObsidianNode {
+	id: string;
+	weight: number;
+	forward: object;
+	reverse: object;
+}
+
 export interface NodeFactorSettings {
 	fwdMultiplier: number;
 	fwdTree: boolean;
