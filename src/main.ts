@@ -5,6 +5,7 @@ import SampleSettingTab from "./settings";
 
 export default class NodeFactor extends Plugin {
 	settings: NodeFactorSettings;
+	updateLoop: boolean;
 
 	async onload() {
 		await this.loadSettings();
@@ -15,7 +16,11 @@ export default class NodeFactor extends Plugin {
 				const leaf = this.app.workspace
 					.getLeavesOfType("graph")
 					.first();
-				if (!leaf) return;
+				if (!leaf) {
+					this.updateLoop = false;
+					return;
+				}
+				this.updateLoop = true;
 
 				// @ts-ignore
 				const nodes: ObsidianNode[] = leaf.view.renderer.nodes;
@@ -43,7 +48,7 @@ export default class NodeFactor extends Plugin {
 				const weight = this.calcNodeWeight(node, treeOptimizeMap);
 				node.weight = weight;
 			});
-			this.calcLoop(nodes);
+			if (this.updateLoop) this.calcLoop(nodes);
 		}, 10);
 	}
 
