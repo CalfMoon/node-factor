@@ -68,7 +68,18 @@ export default class NodeFactor extends Plugin {
 			weight += Object.keys(node.forward).length * settings.fwdMultiplier;
 		}
 
-		return weight;
+		if (settings.lettersPerWt != 0) {
+			weight += this.letterCount(node) / settings.lettersPerWt;
+		}
+
+		return Math.round(weight);
+	}
+
+	private letterCount(node: ObsidianNode): number {
+		const file = this.app.vault.getFileByPath(node.id);
+		if (!file || file.extension != "md") return 0;
+
+		return file.stat.size;
 	}
 
 	private fwdNodeTreeSize(
