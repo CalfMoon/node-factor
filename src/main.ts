@@ -5,8 +5,12 @@ import SampleSettingTab from "./settings";
 
 export default class NodeFactor extends Plugin {
 	settings: NodeFactorSettings;
+
+	// stops loop when graph isn't open
 	updateLoop: boolean;
 
+	// This is a hash map that helps in specifically optimizing the forward tree
+	treeOptimizeMap: Map<string, number> = new Map();
 	async onload() {
 		await this.loadSettings();
 		this.addSettingTab(new SampleSettingTab(this.app, this));
@@ -28,9 +32,8 @@ export default class NodeFactor extends Plugin {
 
 				const start = performance.now();
 
-				const treeOptimizeMap: Map<string, number> = new Map();
 				nodes.forEach((node) => {
-					const weight = this.calcNodeWeight(node, treeOptimizeMap);
+					const weight = this.calcNodeWeight(node);
 					node.weight = weight;
 				});
 
@@ -43,27 +46,22 @@ export default class NodeFactor extends Plugin {
 
 	private calcLoop(nodes: ObsidianNode[]) {
 		setTimeout(() => {
-			const treeOptimizeMap: Map<string, number> = new Map();
 			nodes.forEach((node) => {
-				const weight = this.calcNodeWeight(node, treeOptimizeMap);
+				const weight = this.calcNodeWeight(node);
 				node.weight = weight;
 			});
 			if (this.updateLoop) this.calcLoop(nodes);
 		}, 10);
 	}
 
-	private calcNodeWeight(
-		node: ObsidianNode,
-		treeOptimizeMap: Map<string, number>,
-	): number {
+	private calcNodeWeight(node: ObsidianNode): number {
 		const settings = this.settings;
 		let weight = 0;
 
 		weight += Object.keys(node.reverse).length * settings.bwdMultiplier;
 		if (settings.fwdTree) {
 			weight +=
-				this.fwdNodeTreeSize(node, node.id, treeOptimizeMap) *
-				settings.fwdMultiplier;
+				this.fwdNodeTreeSize(node, node.id) * settings.fwdMultiplier;
 		} else {
 			weight += Object.keys(node.forward).length * settings.fwdMultiplier;
 		}
@@ -82,16 +80,10 @@ export default class NodeFactor extends Plugin {
 		return file.stat.size;
 	}
 
-	private fwdNodeTreeSize(
-		node: ObsidianNode,
-		id: string,
-		treeOptimizeMap: Map<string, number>,
-	): number {
+	private fwdNodeTreeSize(node: ObsidianNode, id: string): number {
 		let size = 0;
 
-		const sizeMap = treeOptimizeMap.get(node.id);
-
-		// the block below
+		const sizeMap = this.treeOptimizeMap.get(node.id);
 		if (sizeMap !== undefined) {
 			return sizeMap as number;
 		}
@@ -104,15 +96,11 @@ export default class NodeFactor extends Plugin {
 			if (key === id) return size;
 
 			size++;
-			const childSize = this.fwdNodeTreeSize(
-				childNode,
-				id,
-				treeOptimizeMap,
-			);
+			const childSize = this.fwdNodeTreeSize(childNode, id);
 			size += childSize;
 		});
 
-		treeOptimizeMap.set(node.id, size);
+		this.treeOptimizeMap.set(node.id, size);
 		return size;
 	}
 
