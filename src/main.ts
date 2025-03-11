@@ -11,6 +11,10 @@ export default class NodeFactor extends Plugin {
 
 	// This is a hash map that helps in specifically optimizing the forward tree
 	private treeOptimizeMap: Map<string, number> = new Map();
+
+	// This array helps in optimizing the whole calculation process
+	private storedSized: Array<number> = [];
+
 	async onload() {
 		await this.loadSettings();
 		this.addSettingTab(new SampleSettingTab(this.app, this));
@@ -33,6 +37,20 @@ export default class NodeFactor extends Plugin {
 				this.calcLoop(nodes);
 			}),
 		);
+
+		// clear cache when there is change in the vault
+		this.registerEvent(
+			this.app.vault.on("create", () => (this.storedSized = [])),
+		);
+		this.registerEvent(
+			this.app.vault.on("modify", () => (this.storedSized = [])),
+		);
+		this.registerEvent(
+			this.app.vault.on("delete", () => (this.storedSized = [])),
+		);
+		this.registerEvent(
+			this.app.vault.on("rename", () => (this.storedSized = [])),
+		);
 	}
 
 	private calcLoop(nodes: ObsidianNode[]) {
@@ -45,7 +63,13 @@ export default class NodeFactor extends Plugin {
 	private updateNodes(nodes: ObsidianNode[]) {
 		this.treeOptimizeMap.clear();
 		nodes.forEach((node, i) => {
-			const weight = this.calcNodeWeight(node);
+			let weight: number;
+			if (this.storedSized[i] != undefined) {
+				weight = this.storedSized[i];
+			} else {
+				weight = this.calcNodeWeight(node);
+				this.storedSized[i] = weight;
+			}
 			node.weight = weight;
 		});
 	}
