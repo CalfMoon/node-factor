@@ -53,6 +53,10 @@ export default class NodeFactor extends Plugin {
 		);
 	}
 
+	async onunload() {
+		this.updateLoop = false;
+	}
+
 	private calcLoop(nodes: ObsidianNode[]) {
 		setTimeout(() => {
 			this.updateNodes(nodes);
