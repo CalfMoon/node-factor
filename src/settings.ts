@@ -14,8 +14,6 @@ export default class SampleSettingTab extends PluginSettingTab {
 		const { containerEl } = this;
 		containerEl.empty();
 
-		containerEl.createEl("h1", { text: "Node Factor Settings" });
-
 		new Setting(containerEl)
 			.setName("Forward link weight multiplier")
 			.setDesc("Multiplier for forward links weight (0 to diable).")
