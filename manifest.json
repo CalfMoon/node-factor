@@ -3,7 +3,7 @@
 	"name": "Node Factor",
 	"version": "1.0.0",
 	"minAppVersion": "0.15.0",
-	"description": "Demonstrates some of the capabilities of the Obsidian API.",
+	"description": "Customize factors effecting node size in graph.",
 	"author": "CalfMoon",
 	"authorUrl": "https://github.com/CalfMoon",
 	"isDesktopOnly": false
