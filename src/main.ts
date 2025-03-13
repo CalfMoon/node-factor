@@ -1,7 +1,7 @@
 import { Plugin } from "obsidian";
 
 import { ObsidianNode, NodeFactorSettings, DEFAULT_SETTINGS } from "./types";
-import SampleSettingTab from "./settings";
+import NodeFactorSettingTab from "./settings";
 
 export default class NodeFactor extends Plugin {
 	settings: NodeFactorSettings;
@@ -17,7 +17,7 @@ export default class NodeFactor extends Plugin {
 
 	async onload() {
 		await this.loadSettings();
-		this.addSettingTab(new SampleSettingTab(this.app, this));
+		this.addSettingTab(new NodeFactorSettingTab(this.app, this));
 
 		this.registerEvent(
 			this.app.workspace.on("layout-change", () => {

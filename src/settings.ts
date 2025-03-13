@@ -2,7 +2,7 @@ import { App, PluginSettingTab, Setting } from "obsidian";
 
 import NodeFactor from "./main";
 
-export default class SampleSettingTab extends PluginSettingTab {
+export default class NodeFactorSettingTab extends PluginSettingTab {
 	plugin: NodeFactor;
 
 	constructor(app: App, plugin: NodeFactor) {
