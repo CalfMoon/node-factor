@@ -1,5 +1,5 @@
 {
-	"name": "obsidian-node-factor",
+	"name": "node-factor",
 	"version": "1.0.0",
 	"description": "Customize factors effecting node size in graph.",
 	"main": "main.js",
@@ -10,7 +10,7 @@
 	},
 	"keywords": [],
 	"author": "CalfMoon",
-	"license": "OBSD",
+	"license": "MIT",
 	"devDependencies": {
 		"@types/node": "^16.11.6",
 		"@typescript-eslint/eslint-plugin": "5.29.0",

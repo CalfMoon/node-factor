@@ -1,4 +1,4 @@
-# Obsidian Node Factor
+# Node Factor
 This plugin helps you customize the factors that effect node size in obsidian graph view.
 The factors include, letter count, forward & backward weight, and forward tree weight.
 <img src="./screenshots/1.jpeg">
@@ -19,4 +19,4 @@ CalfMoon: [Email](kritagyabhattarai@proton.me), [Github](https://github.com/Calf
 ## Bug Reports
 This project still new and might have a few bugs. For bug reports use this repo's Issues section.
 ## License
-OBSD, see [LICENSE](LICENSE).
+MIT, see [LICENSE](LICENSE).
