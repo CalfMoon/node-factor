@@ -40,16 +40,16 @@ export default class NodeFactor extends Plugin {
 
 		// clear cache when there is change in the vault
 		this.registerEvent(
-			this.app.vault.on("create", () => (this.storedSized = [])),
+			this.app.vault.on("create", () => this.clearSizeCache()),
 		);
 		this.registerEvent(
-			this.app.vault.on("modify", () => (this.storedSized = [])),
+			this.app.vault.on("modify", () => this.clearSizeCache()),
 		);
 		this.registerEvent(
-			this.app.vault.on("delete", () => (this.storedSized = [])),
+			this.app.vault.on("delete", () => this.clearSizeCache()),
 		);
 		this.registerEvent(
-			this.app.vault.on("rename", () => (this.storedSized = [])),
+			this.app.vault.on("rename", () => this.clearSizeCache()),
 		);
 	}
 
@@ -126,6 +126,10 @@ export default class NodeFactor extends Plugin {
 
 		this.treeOptimizeMap.set(node.id, size);
 		return size;
+	}
+
+	clearSizeCache() {
+		this.storedSized = [];
 	}
 
 	async loadSettings() {
