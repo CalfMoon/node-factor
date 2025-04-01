@@ -16,7 +16,7 @@ export default class NodeFactorSettingTab extends PluginSettingTab {
 
 		new Setting(containerEl)
 			.setName("Forward link weight multiplier")
-			.setDesc("Multiplier for forward links weight (0 to diable).")
+			.setDesc("Multiplier for forward links weight (0 to disable).")
 			.addSlider((slider) =>
 				slider
 					.setLimits(0, 20, 1)
@@ -42,7 +42,7 @@ export default class NodeFactorSettingTab extends PluginSettingTab {
 
 		new Setting(containerEl)
 			.setName("Backward link weight multiplier")
-			.setDesc("Multiplier for backward links weight (0 to diable).")
+			.setDesc("Multiplier for backward links weight (0 to disable).")
 			.addSlider((slider) =>
 				slider
 					.setLimits(0, 20, 1)
