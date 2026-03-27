@@ -85,7 +85,7 @@ export default class NodeFactor extends Plugin {
 		weight += Object.keys(node.reverse).length * settings.bwdMultiplier;
 		if (settings.fwdTree) {
 			weight +=
-				this.fwdNodeTreeSize(node, node.id) * settings.fwdMultiplier;
+				this.fwdNodeTreeSize(node, new Set()) * settings.fwdMultiplier;
 		} else {
 			weight += Object.keys(node.forward).length * settings.fwdMultiplier;
 		}
@@ -104,8 +104,12 @@ export default class NodeFactor extends Plugin {
 		return file.stat.size;
 	}
 
-	private fwdNodeTreeSize(node: ObsidianNode, id: string): number {
-		let size = 0;
+	private fwdNodeTreeSize(
+		node: ObsidianNode,
+		antiLoopSet: Set<string>,
+	): number {
+		let size: number = 0;
+		antiLoopSet.add(node.id);
 
 		const sizeMap = this.treeOptimizeMap.get(node.id);
 		if (sizeMap !== undefined) {
@@ -116,11 +120,11 @@ export default class NodeFactor extends Plugin {
 			// @ts-ignore
 			const childNode: ObsidianNode = value.target;
 
-			// Prevents looping if A -> B -> C -> A
-			if (key === id) return size;
+			// Prevents looping if A -> B -> C -> D -> B
+			if (antiLoopSet.has(key)) return size;
 
 			size++;
-			const childSize = this.fwdNodeTreeSize(childNode, id);
+			const childSize = this.fwdNodeTreeSize(childNode, antiLoopSet);
 			size += childSize;
 		});
 
