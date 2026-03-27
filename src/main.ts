@@ -7,7 +7,7 @@ export default class NodeFactor extends Plugin {
 	settings: NodeFactorSettings;
 
 	// stops loop when graph isn't open
-	private updateLoop: boolean;
+	private loopId: NodeJS.Timer;
 
 	async onload() {
 		await this.loadSettings();
@@ -19,23 +19,25 @@ export default class NodeFactor extends Plugin {
 					.getLeavesOfType("graph")
 					.first();
 				if (!leaf) {
-					this.updateLoop = false;
+					clearInterval(this.loopId);
 					return;
 				}
-				this.updateLoop = true;
 
 				// @ts-ignore
 				const nodes: ObsidianNode[] = leaf.view.renderer.nodes;
 				if (nodes.length === 0) return;
 
+				this.clearSizeCache();
 				this.calcLoop(nodes);
 			}),
 		);
 
 		// clear cache when there is change in the vault
-		this.registerEvent(
-			this.app.vault.on("create", () => this.clearSizeCache()),
-		);
+		this.app.workspace.onLayoutReady(() => {
+			this.registerEvent(
+				this.app.vault.on("create", () => this.clearSizeCache()),
+			);
+		});
 		this.registerEvent(
 			this.app.vault.on("modify", () => this.clearSizeCache()),
 		);
@@ -48,19 +50,17 @@ export default class NodeFactor extends Plugin {
 	}
 
 	async onunload() {
-		this.updateLoop = false;
+		clearInterval(this.loopId);
 	}
 
 	private calcLoop(nodes: ObsidianNode[]) {
-		setTimeout(() => {
+		this.loopId = setInterval(() => {
 			this.updateNodes(nodes);
-			if (this.updateLoop) this.calcLoop(nodes);
-		}, 10);
+		}, 500);
 	}
 
 	private storedSize: Map<string, number> = new Map();
 	private updateNodes(nodes: ObsidianNode[]) {
-		this.treeOptimizeMap.clear();
 		nodes.forEach((node, i) => {
 			let weight: number;
 			if (this.storedSize.get(node.id) != undefined) {
@@ -130,6 +130,7 @@ export default class NodeFactor extends Plugin {
 
 	clearSizeCache() {
 		this.storedSize.clear();
+		this.treeOptimizeMap.clear();
 	}
 
 	async loadSettings() {
