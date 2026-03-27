@@ -31,7 +31,9 @@ export default class NodeFactorSettingTab extends PluginSettingTab {
 
 		new Setting(containerEl)
 			.setName("Travel forward tree")
-			.setDesc("Travel forward tree to calcuate node size.")
+			.setDesc(
+				"Travel forward and add all other nodes to determine final node size.",
+			)
 			.addToggle((toggle) =>
 				toggle
 					.setValue(this.plugin.settings.fwdTree)

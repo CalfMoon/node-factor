@@ -10,13 +10,13 @@ The factors include, letter count, forward & backward weight, and forward tree w
 ## Configuration Options
 | Option                          | Meaning																									| Default value |
 | ------------------------------- | ------------------------------------------------------------------------------------------------------- | ------------- |
-| Forward link weight multiplier  | Weight of single link coming out of a node																| 1             |
+| Forward link weight multiplier  | Weight of single link coming forward out of a node														| 1             |
 | Travel forward tree             | Determines if forward weight is decided by just the immediate nodes coming out or everything after it	| off           |
-| Backward link weight multiplier | Weight of single link coming out of a node																| 1             |
+| Backward link weight multiplier | Weight of single link coming backward out of a node														| 1             |
 | Character per weight            | Given number of letters give 1 weight																	| 0             |
 ## Author
 CalfMoon: [Email](kritagyabhattarai@proton.me), [Github](https://github.com/CalfMoon)
 ## Bug Reports
-This project still new and might have a few bugs. For bug reports use this repo's Issues section.
+This project is still new and might have a few bugs. For bug reports use this repo's Issues section.
 ## License
 MIT, see [LICENSE](LICENSE).
