@@ -9,12 +9,6 @@ export default class NodeFactor extends Plugin {
 	// stops loop when graph isn't open
 	private updateLoop: boolean;
 
-	// This is a hash map that helps in specifically optimizing the forward tree
-	private treeOptimizeMap: Map<string, number> = new Map();
-
-	// This array helps in optimizing the whole calculation process
-	private storedSized: Array<number> = [];
-
 	async onload() {
 		await this.loadSettings();
 		this.addSettingTab(new NodeFactorSettingTab(this.app, this));
@@ -64,15 +58,16 @@ export default class NodeFactor extends Plugin {
 		}, 10);
 	}
 
+	private storedSize: Map<string, number> = new Map();
 	private updateNodes(nodes: ObsidianNode[]) {
 		this.treeOptimizeMap.clear();
 		nodes.forEach((node, i) => {
 			let weight: number;
-			if (this.storedSized[i] != undefined) {
-				weight = this.storedSized[i];
+			if (this.storedSize.get(node.id) != undefined) {
+				weight = this.storedSize.get(node.id) as number;
 			} else {
 				weight = this.calcNodeWeight(node);
-				this.storedSized[i] = weight;
+				this.storedSize.set(node.id, weight);
 			}
 			node.weight = weight;
 		});
@@ -104,6 +99,7 @@ export default class NodeFactor extends Plugin {
 		return file.stat.size;
 	}
 
+	private treeOptimizeMap: Map<string, number> = new Map();
 	private fwdNodeTreeSize(
 		node: ObsidianNode,
 		antiLoopSet: Set<string>,
@@ -133,7 +129,7 @@ export default class NodeFactor extends Plugin {
 	}
 
 	clearSizeCache() {
-		this.storedSized = [];
+		this.storedSize.clear();
 	}
 
 	async loadSettings() {
