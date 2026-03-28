@@ -6,7 +6,7 @@ import NodeFactorSettingTab from "./settings";
 export default class NodeFactor extends Plugin {
 	settings: NodeFactorSettings;
 
-	// stops loop when graph isn't open
+	// interval Id of continously running loop
 	private loopId: NodeJS.Timer;
 
 	async onload() {
@@ -18,22 +18,26 @@ export default class NodeFactor extends Plugin {
 				const leaf = this.app.workspace
 					.getLeavesOfType("graph")
 					.first();
+				// exit loop if the loaded page isn't grah
 				if (!leaf) {
 					clearInterval(this.loopId);
 					return;
 				}
 
 				// @ts-ignore
-				const nodes: ObsidianNode[] = leaf.view.renderer.nodes;
+				const nodes: Array<ObsidianNode> = leaf.view.renderer.nodes;
 				if (nodes.length === 0) return;
 
 				this.clearSizeCache();
-				this.calcLoop(nodes);
+				this.updateLoop(nodes);
 			}),
 		);
 
 		// clear cache when there is change in the vault
 		this.app.workspace.onLayoutReady(() => {
+			// layout ready is required because obsidian calls
+			// create for every existing file when initally loading obsidian
+			// https://docs.obsidian.md/plugins/guides/load-time#Pitfalls
 			this.registerEvent(
 				this.app.vault.on("create", () => this.clearSizeCache()),
 			);
@@ -53,16 +57,14 @@ export default class NodeFactor extends Plugin {
 		clearInterval(this.loopId);
 	}
 
-	private calcLoop(nodes: ObsidianNode[]) {
-		this.loopId = setInterval(() => {
-			this.updateNodes(nodes);
-		}, 500);
+	private updateLoop(nodes: Array<ObsidianNode>) {
+		this.loopId = setInterval(() => this.updateNodes(nodes), 500);
 	}
 
 	private storedSize: Map<string, number> = new Map();
-	private updateNodes(nodes: ObsidianNode[]) {
-		nodes.forEach((node, i) => {
-			let weight: number;
+	private updateNodes(nodes: Array<ObsidianNode>) {
+		nodes.forEach((node, _i) => {
+			let weight = 0;
 			if (this.storedSize.get(node.id) != undefined) {
 				weight = this.storedSize.get(node.id) as number;
 			} else {
@@ -94,7 +96,7 @@ export default class NodeFactor extends Plugin {
 
 	private letterCount(node: ObsidianNode): number {
 		const file = this.app.vault.getFileByPath(node.id);
-		if (!file || file.extension != "md") return 0;
+		if (file == null || file.extension != "md") return 0;
 
 		return file.stat.size;
 	}
@@ -104,11 +106,11 @@ export default class NodeFactor extends Plugin {
 		node: ObsidianNode,
 		antiLoopSet: Set<string>,
 	): number {
-		let size: number = 0;
+		let size = 0;
 		antiLoopSet.add(node.id);
 
 		const sizeMap = this.treeOptimizeMap.get(node.id);
-		if (sizeMap !== undefined) {
+		if (sizeMap != undefined) {
 			return sizeMap as number;
 		}
 
