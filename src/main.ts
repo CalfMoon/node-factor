@@ -6,23 +6,13 @@ import NodeFactorSettingTab from "./settings";
 export default class NodeFactor extends Plugin {
 	settings: NodeFactorSettings;
 
-	private nodes: Array<ObsidianNode>;
 	async onload() {
 		await this.loadSettings();
 		this.addSettingTab(new NodeFactorSettingTab(this.app, this));
 
 		this.registerEvent(
 			this.app.workspace.on("active-leaf-change", () => {
-				const leaf = this.app.workspace
-					.getLeavesOfType("graph")
-					.first();
-				// exit loop if the loaded page isn't grah
-				if (!leaf) return;
-
-				// @ts-ignore
-				this.nodes = leaf.view.renderer.nodes;
-				if (this.nodes.length === 0) return;
-
+				// we can still use cache when only active leaf changes
 				this.updateGraph();
 			}),
 		);
@@ -47,13 +37,20 @@ export default class NodeFactor extends Plugin {
 		);
 	}
 
-	async onunload() {
-		// clearInterval(this.loopId);
-	}
+	async onunload() {}
 
 	private sizeCache: Map<string, number> = new Map();
 	private updateGraph() {
-		const nodes = this.nodes;
+		const leaf = this.app.workspace.getLeavesOfType("graph").first();
+		// don't run if graph page isn't loaded
+		if (!leaf) return;
+
+		// @ts-ignore
+		let nodes: Array<ObsidianNode> = leaf.view.renderer.nodes;
+		if (nodes.length === 0) return;
+
+		// Slight delay in calculations is needed to fix node size
+		// if graph view is initially opened when opening obsidian
 		setTimeout(() => {
 			nodes.forEach((node, _i) => {
 				let weight = 0;
