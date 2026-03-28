@@ -23,7 +23,7 @@ export default class NodeFactorSettingTab extends PluginSettingTab {
 					.setDynamicTooltip()
 					.setValue(this.plugin.settings.fwdMultiplier)
 					.onChange(async (value) => {
-						this.plugin.clearSizeCache();
+						this.plugin.recalculateSize();
 						this.plugin.settings.fwdMultiplier = value;
 						await this.plugin.saveSettings();
 					}),
@@ -38,7 +38,7 @@ export default class NodeFactorSettingTab extends PluginSettingTab {
 				toggle
 					.setValue(this.plugin.settings.fwdTree)
 					.onChange(async (value) => {
-						this.plugin.clearSizeCache();
+						this.plugin.recalculateSize();
 						this.plugin.settings.fwdTree = value;
 						await this.plugin.saveSettings();
 					}),
@@ -53,7 +53,7 @@ export default class NodeFactorSettingTab extends PluginSettingTab {
 					.setDynamicTooltip()
 					.setValue(this.plugin.settings.bwdMultiplier)
 					.onChange(async (value) => {
-						this.plugin.clearSizeCache();
+						this.plugin.recalculateSize();
 						this.plugin.settings.bwdMultiplier = value;
 						await this.plugin.saveSettings();
 					}),

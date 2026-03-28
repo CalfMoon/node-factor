@@ -23,17 +23,17 @@ export default class NodeFactor extends Plugin {
 			// create for every existing file when initally loading obsidian
 			// https://docs.obsidian.md/plugins/guides/load-time#Pitfalls
 			this.registerEvent(
-				this.app.vault.on("create", () => this.clearSizeCache()),
+				this.app.vault.on("create", () => this.recalculateSize()),
 			);
 		});
 		this.registerEvent(
-			this.app.vault.on("modify", () => this.clearSizeCache()),
+			this.app.vault.on("modify", () => this.recalculateSize()),
 		);
 		this.registerEvent(
-			this.app.vault.on("delete", () => this.clearSizeCache()),
+			this.app.vault.on("delete", () => this.recalculateSize()),
 		);
 		this.registerEvent(
-			this.app.vault.on("rename", () => this.clearSizeCache()),
+			this.app.vault.on("rename", () => this.recalculateSize()),
 		);
 	}
 
@@ -113,7 +113,7 @@ export default class NodeFactor extends Plugin {
 		return size;
 	}
 
-	clearSizeCache() {
+	recalculateSize() {
 		this.sizeCache.clear();
 		this.updateGraph();
 	}
