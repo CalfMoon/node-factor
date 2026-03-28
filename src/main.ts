@@ -54,7 +54,6 @@ export default class NodeFactor extends Plugin {
 	private sizeCache: Map<string, number> = new Map();
 	private updateGraph() {
 		const nodes = this.nodes;
-		this.treeOptimizeMap.clear();
 		setTimeout(() => {
 			nodes.forEach((node, _i) => {
 				let weight = 0;
@@ -95,18 +94,12 @@ export default class NodeFactor extends Plugin {
 		return file.stat.size;
 	}
 
-	private treeOptimizeMap: Map<string, number> = new Map();
 	private fwdNodeTreeSize(
 		node: ObsidianNode,
 		antiLoopSet: Set<string>,
 	): number {
 		let size = 0;
 		antiLoopSet.add(node.id);
-
-		const sizeMap = this.treeOptimizeMap.get(node.id);
-		if (sizeMap != undefined) {
-			return sizeMap as number;
-		}
 
 		Object.entries(node.forward).forEach(([key, value]) => {
 			// @ts-ignore
@@ -120,13 +113,11 @@ export default class NodeFactor extends Plugin {
 			size += childSize;
 		});
 
-		this.treeOptimizeMap.set(node.id, size);
 		return size;
 	}
 
 	clearSizeCache() {
 		this.sizeCache.clear();
-		this.treeOptimizeMap.clear();
 		this.updateGraph();
 	}
 
