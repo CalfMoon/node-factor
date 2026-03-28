@@ -62,7 +62,7 @@ export default class NodeFactorSettingTab extends PluginSettingTab {
 		new Setting(containerEl)
 			.setName("Character per weight")
 			.setDesc(
-				"Add 1 weight to node size per no of given Character (0 to disable).",
+				"Add 1 weight to node size per no of given character (0 to disable).",
 			)
 			.addSlider((slider) =>
 				slider

@@ -37,7 +37,7 @@ export default class NodeFactor extends Plugin {
 		);
 	}
 
-	async onunload() {}
+	onunload() {}
 
 	private sizeCache: Map<string, number> = new Map();
 	private timeoutId: NodeJS.Timeout;
@@ -105,13 +105,12 @@ export default class NodeFactor extends Plugin {
 			const childNode: ObsidianNode = value.target;
 
 			// Prevents looping if A -> B -> C -> D -> B
-			if (antiLoopSet.has(key)) return size;
-
-			size++;
-			const childSize = this.fwdNodeTreeSize(childNode, antiLoopSet);
-			size += childSize;
+			if (!antiLoopSet.has(key)) {
+				size++;
+				const childSize = this.fwdNodeTreeSize(childNode, antiLoopSet);
+				size += childSize;
+			}
 		});
-
 		return size;
 	}
 
