@@ -40,6 +40,7 @@ export default class NodeFactor extends Plugin {
 	async onunload() {}
 
 	private sizeCache: Map<string, number> = new Map();
+	private timeoutId: NodeJS.Timeout;
 	private updateGraph() {
 		const leaf = this.app.workspace.getLeavesOfType("graph").first();
 		// don't run if graph page isn't loaded
@@ -51,7 +52,8 @@ export default class NodeFactor extends Plugin {
 
 		// Slight delay in calculations is needed to fix node size
 		// if graph view is initially opened when opening obsidian
-		setTimeout(() => {
+		clearTimeout(this.timeoutId);
+		this.timeoutId = setTimeout(() => {
 			nodes.forEach((node, _i) => {
 				let weight = 0;
 				if (this.sizeCache.get(node.id) != undefined) {
