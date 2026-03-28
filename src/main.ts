@@ -6,30 +6,24 @@ import NodeFactorSettingTab from "./settings";
 export default class NodeFactor extends Plugin {
 	settings: NodeFactorSettings;
 
-	// interval Id of continously running loop
-	private loopId: NodeJS.Timer;
-
+	private nodes: Array<ObsidianNode>;
 	async onload() {
 		await this.loadSettings();
 		this.addSettingTab(new NodeFactorSettingTab(this.app, this));
 
 		this.registerEvent(
-			this.app.workspace.on("layout-change", () => {
+			this.app.workspace.on("active-leaf-change", () => {
 				const leaf = this.app.workspace
 					.getLeavesOfType("graph")
 					.first();
 				// exit loop if the loaded page isn't grah
-				if (!leaf) {
-					clearInterval(this.loopId);
-					return;
-				}
+				if (!leaf) return;
 
 				// @ts-ignore
-				const nodes: Array<ObsidianNode> = leaf.view.renderer.nodes;
-				if (nodes.length === 0) return;
+				this.nodes = leaf.view.renderer.nodes;
+				if (this.nodes.length === 0) return;
 
-				this.clearSizeCache();
-				this.updateLoop(nodes);
+				this.updateGraph();
 			}),
 		);
 
@@ -54,25 +48,25 @@ export default class NodeFactor extends Plugin {
 	}
 
 	async onunload() {
-		clearInterval(this.loopId);
+		// clearInterval(this.loopId);
 	}
 
-	private updateLoop(nodes: Array<ObsidianNode>) {
-		this.loopId = setInterval(() => this.updateNodes(nodes), 500);
-	}
-
-	private storedSize: Map<string, number> = new Map();
-	private updateNodes(nodes: Array<ObsidianNode>) {
-		nodes.forEach((node, _i) => {
-			let weight = 0;
-			if (this.storedSize.get(node.id) != undefined) {
-				weight = this.storedSize.get(node.id) as number;
-			} else {
-				weight = this.calcNodeWeight(node);
-				this.storedSize.set(node.id, weight);
-			}
-			node.weight = weight;
-		});
+	private sizeCache: Map<string, number> = new Map();
+	private updateGraph() {
+		const nodes = this.nodes;
+		this.treeOptimizeMap.clear();
+		setTimeout(() => {
+			nodes.forEach((node, _i) => {
+				let weight = 0;
+				if (this.sizeCache.get(node.id) != undefined) {
+					weight = this.sizeCache.get(node.id) as number;
+				} else {
+					weight = this.calcNodeWeight(node);
+					this.sizeCache.set(node.id, weight);
+				}
+				node.weight = weight;
+			});
+		}, 500);
 	}
 
 	private calcNodeWeight(node: ObsidianNode): number {
@@ -131,8 +125,9 @@ export default class NodeFactor extends Plugin {
 	}
 
 	clearSizeCache() {
-		this.storedSize.clear();
+		this.sizeCache.clear();
 		this.treeOptimizeMap.clear();
+		this.updateGraph();
 	}
 
 	async loadSettings() {
