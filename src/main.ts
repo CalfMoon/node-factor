@@ -6,30 +6,14 @@ import NodeFactorSettingTab from "./settings";
 export default class NodeFactor extends Plugin {
 	settings: NodeFactorSettings;
 
-	// interval Id of continously running loop
-	private loopId: NodeJS.Timer;
-
 	async onload() {
 		await this.loadSettings();
 		this.addSettingTab(new NodeFactorSettingTab(this.app, this));
 
 		this.registerEvent(
-			this.app.workspace.on("layout-change", () => {
-				const leaf = this.app.workspace
-					.getLeavesOfType("graph")
-					.first();
-				// exit loop if the loaded page isn't grah
-				if (!leaf) {
-					clearInterval(this.loopId);
-					return;
-				}
-
-				// @ts-ignore
-				const nodes: Array<ObsidianNode> = leaf.view.renderer.nodes;
-				if (nodes.length === 0) return;
-
-				this.clearSizeCache();
-				this.updateLoop(nodes);
+			this.app.workspace.on("active-leaf-change", () => {
+				// we can still use cache when only active leaf changes
+				this.updateGraph();
 			}),
 		);
 
@@ -39,40 +23,48 @@ export default class NodeFactor extends Plugin {
 			// create for every existing file when initally loading obsidian
 			// https://docs.obsidian.md/plugins/guides/load-time#Pitfalls
 			this.registerEvent(
-				this.app.vault.on("create", () => this.clearSizeCache()),
+				this.app.vault.on("create", () => this.recalculateSize()),
 			);
 		});
 		this.registerEvent(
-			this.app.vault.on("modify", () => this.clearSizeCache()),
+			this.app.vault.on("modify", () => this.recalculateSize()),
 		);
 		this.registerEvent(
-			this.app.vault.on("delete", () => this.clearSizeCache()),
+			this.app.vault.on("delete", () => this.recalculateSize()),
 		);
 		this.registerEvent(
-			this.app.vault.on("rename", () => this.clearSizeCache()),
+			this.app.vault.on("rename", () => this.recalculateSize()),
 		);
 	}
 
-	async onunload() {
-		clearInterval(this.loopId);
-	}
+	async onunload() {}
 
-	private updateLoop(nodes: Array<ObsidianNode>) {
-		this.loopId = setInterval(() => this.updateNodes(nodes), 500);
-	}
+	private sizeCache: Map<string, number> = new Map();
+	private timeoutId: NodeJS.Timeout;
+	private updateGraph() {
+		const leaf = this.app.workspace.getLeavesOfType("graph").first();
+		// don't run if graph page isn't loaded
+		if (!leaf) return;
 
-	private storedSize: Map<string, number> = new Map();
-	private updateNodes(nodes: Array<ObsidianNode>) {
-		nodes.forEach((node, _i) => {
-			let weight = 0;
-			if (this.storedSize.get(node.id) != undefined) {
-				weight = this.storedSize.get(node.id) as number;
-			} else {
-				weight = this.calcNodeWeight(node);
-				this.storedSize.set(node.id, weight);
-			}
-			node.weight = weight;
-		});
+		// @ts-ignore
+		let nodes: Array<ObsidianNode> = leaf.view.renderer.nodes;
+		if (nodes.length === 0) return;
+
+		// Slight delay in calculations is needed to fix node size
+		// if graph view is initially opened when opening obsidian
+		clearTimeout(this.timeoutId);
+		this.timeoutId = setTimeout(() => {
+			nodes.forEach((node, _i) => {
+				let weight = 0;
+				if (this.sizeCache.get(node.id) != undefined) {
+					weight = this.sizeCache.get(node.id) as number;
+				} else {
+					weight = this.calcNodeWeight(node);
+					this.sizeCache.set(node.id, weight);
+				}
+				node.weight = weight;
+			});
+		}, 500);
 	}
 
 	private calcNodeWeight(node: ObsidianNode): number {
@@ -101,18 +93,12 @@ export default class NodeFactor extends Plugin {
 		return file.stat.size;
 	}
 
-	private treeOptimizeMap: Map<string, number> = new Map();
 	private fwdNodeTreeSize(
 		node: ObsidianNode,
 		antiLoopSet: Set<string>,
 	): number {
 		let size = 0;
 		antiLoopSet.add(node.id);
-
-		const sizeMap = this.treeOptimizeMap.get(node.id);
-		if (sizeMap != undefined) {
-			return sizeMap as number;
-		}
 
 		Object.entries(node.forward).forEach(([key, value]) => {
 			// @ts-ignore
@@ -126,13 +112,12 @@ export default class NodeFactor extends Plugin {
 			size += childSize;
 		});
 
-		this.treeOptimizeMap.set(node.id, size);
 		return size;
 	}
 
-	clearSizeCache() {
-		this.storedSize.clear();
-		this.treeOptimizeMap.clear();
+	recalculateSize() {
+		this.sizeCache.clear();
+		this.updateGraph();
 	}
 
 	async loadSettings() {
