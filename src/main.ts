@@ -49,7 +49,7 @@ export default class NodeFactor extends Plugin {
 		if (!leaf) return;
 
 		// @ts-ignore
-		let nodes: Array<ObsidianNode> = leaf.view.renderer.nodes;
+		const nodes: Array<ObsidianNode> = leaf.view.renderer.nodes;
 		if (nodes.length === 0) return;
 
 		// Slight delay in calculations is needed to fix node size

@@ -25,7 +25,7 @@ export default class NodeFactorSettingTab extends PluginSettingTab {
 		containerEl.empty();
 
 		new Setting(containerEl)
-			.setName("Programatically Set Size")
+			.setName("Programatically set size")
 			.setHeading();
 
 		new Setting(containerEl)
@@ -90,7 +90,7 @@ export default class NodeFactorSettingTab extends PluginSettingTab {
 					});
 			});
 
-		new Setting(containerEl).setName("Manually Set Weight").setHeading();
+		new Setting(containerEl).setName("Manually set size").setHeading();
 
 		let selectedWeight: SliderComponent;
 		let selectedFile: SearchComponent;
@@ -102,9 +102,9 @@ export default class NodeFactorSettingTab extends PluginSettingTab {
 				new FileSuggest(this.app, search.inputEl);
 				selectedFile = search;
 				search
-					.setPlaceholder("Enter File Name")
+					.setPlaceholder("Enter file name")
 					.onChange(async (value) => {
-						if (value != "") submitButton.setDisabled(false);
+						submitButton.setDisabled(value.length === 0);
 					});
 			})
 			.addSlider((slider) => {
@@ -126,9 +126,7 @@ export default class NodeFactorSettingTab extends PluginSettingTab {
 						selectedFile.setValue("");
 
 						const fileExists = this.plugin.settings.manual.find(
-							(foundFile) => {
-								foundFile.id == enteredFileData.id;
-							},
+							(foundFile) => foundFile.id == enteredFileData.id,
 						);
 
 						if (!fileExists) {
@@ -139,7 +137,7 @@ export default class NodeFactorSettingTab extends PluginSettingTab {
 
 						this.plugin.settings.manual.push(enteredFileData);
 						await this.plugin.saveSettings();
-						new Notice("Manual Size added");
+						new Notice("Manual size added");
 
 						// Rerender display
 						this.display();
@@ -155,7 +153,7 @@ export default class NodeFactorSettingTab extends PluginSettingTab {
 				.addButton((button) => {
 					button
 						.setIcon("trash")
-						.setTooltip("Remove Manually added size")
+						.setTooltip("Remove manually added size")
 						.onClick(async () => {
 							this.plugin.settings.manual.remove(value);
 							await this.plugin.saveSettings();
