@@ -146,5 +146,22 @@ export default class NodeFactorSettingTab extends PluginSettingTab {
 						this.plugin.recalculateSize();
 					});
 			});
+
+		// Display all manually added weights
+		this.plugin.settings.manual.forEach((value: FileData) => {
+			new Setting(containerEl)
+				.setName(value.id)
+				.setDesc(`Weight: ${String(value.weight)}`)
+				.addButton((button) => {
+					button
+						.setIcon("trash")
+						.setTooltip("Remove Manually added size")
+						.onClick(async () => {
+							this.plugin.settings.manual.remove(value);
+							await this.plugin.saveSettings();
+							this.display();
+						});
+				});
+		});
 	}
 }

@@ -73,11 +73,10 @@ export default class NodeFactor extends Plugin {
 		const settings = this.settings;
 		let weight = 0;
 
-		let manualFileData = settings.manual.find(
+		const manualFileData = settings.manual.find(
 			(manualFileData) => manualFileData.id == node.id,
 		);
 		if (manualFileData != null) {
-			console.log(manualFileData);
 			return manualFileData.weight;
 		}
 
