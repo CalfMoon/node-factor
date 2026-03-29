@@ -11,10 +11,12 @@ export default class NodeFactor extends Plugin {
 		this.addSettingTab(new NodeFactorSettingTab(this.app, this));
 
 		this.registerEvent(
-			this.app.workspace.on("active-leaf-change", () => {
-				// we can still use cache when only active leaf changes
-				this.updateGraph();
-			}),
+			this.app.workspace.on("active-leaf-change", () =>
+				this.updateGraph(),
+			),
+		);
+		this.registerEvent(
+			this.app.workspace.on("layout-change", () => this.updateGraph()),
 		);
 
 		// clear cache when there is change in the vault
@@ -70,6 +72,13 @@ export default class NodeFactor extends Plugin {
 	private calcNodeWeight(node: ObsidianNode): number {
 		const settings = this.settings;
 		let weight = 0;
+
+		const manualFileData = settings.manual.find(
+			(manualFileData) => manualFileData.id == node.id,
+		);
+		if (manualFileData != null) {
+			return manualFileData.weight;
+		}
 
 		weight += Object.keys(node.reverse).length * settings.bwdMultiplier;
 		if (settings.fwdTree) {
