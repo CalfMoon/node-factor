@@ -1,6 +1,15 @@
-import { App, PluginSettingTab, Setting } from "obsidian";
+import {
+	App,
+	ButtonComponent,
+	PluginSettingTab,
+	SearchComponent,
+	Setting,
+	SliderComponent,
+} from "obsidian";
 
 import NodeFactor from "./main";
+import FileSuggest from "./file-suggest";
+import { FileData } from "./types";
 
 export default class NodeFactorSettingTab extends PluginSettingTab {
 	plugin: NodeFactor;
@@ -15,56 +24,60 @@ export default class NodeFactorSettingTab extends PluginSettingTab {
 		containerEl.empty();
 
 		new Setting(containerEl)
+			.setName("Programatically Set Size")
+			.setHeading();
+
+		new Setting(containerEl)
 			.setName("Forward link weight multiplier")
 			.setDesc("Multiplier for forward links weight (0 to disable).")
-			.addSlider((slider) =>
+			.addSlider((slider) => {
 				slider
 					.setLimits(0, 20, 1)
 					.setDynamicTooltip()
 					.setValue(this.plugin.settings.fwdMultiplier)
 					.onChange(async (value) => {
-						this.plugin.recalculateSize();
 						this.plugin.settings.fwdMultiplier = value;
 						await this.plugin.saveSettings();
-					}),
-			);
+						this.plugin.recalculateSize();
+					});
+			});
 
 		new Setting(containerEl)
 			.setName("Travel forward tree")
 			.setDesc(
 				"Travel forward and add all other nodes to determine final node size.",
 			)
-			.addToggle((toggle) =>
+			.addToggle((toggle) => {
 				toggle
 					.setValue(this.plugin.settings.fwdTree)
 					.onChange(async (value) => {
-						this.plugin.recalculateSize();
 						this.plugin.settings.fwdTree = value;
 						await this.plugin.saveSettings();
-					}),
-			);
+						this.plugin.recalculateSize();
+					});
+			});
 
 		new Setting(containerEl)
 			.setName("Backward link weight multiplier")
 			.setDesc("Multiplier for backward links weight (0 to disable).")
-			.addSlider((slider) =>
+			.addSlider((slider) => {
 				slider
 					.setLimits(0, 20, 1)
 					.setDynamicTooltip()
 					.setValue(this.plugin.settings.bwdMultiplier)
 					.onChange(async (value) => {
-						this.plugin.recalculateSize();
 						this.plugin.settings.bwdMultiplier = value;
 						await this.plugin.saveSettings();
-					}),
-			);
+						this.plugin.recalculateSize();
+					});
+			});
 
 		new Setting(containerEl)
 			.setName("Character per weight")
 			.setDesc(
 				"Add 1 weight to node size per no of given Character (0 to disable).",
 			)
-			.addSlider((slider) =>
+			.addSlider((slider) => {
 				slider
 					.setLimits(0, 5000, 100)
 					.setDynamicTooltip()
@@ -72,7 +85,56 @@ export default class NodeFactorSettingTab extends PluginSettingTab {
 					.onChange(async (value) => {
 						this.plugin.settings.lettersPerWt = value;
 						await this.plugin.saveSettings();
-					}),
-			);
+						this.plugin.recalculateSize();
+					});
+			});
+
+		new Setting(containerEl).setName("Manually Set Weight").setHeading();
+
+		let selectedWeight: SliderComponent;
+		let selectedFile: SearchComponent;
+		let submitButton: ButtonComponent;
+		new Setting(containerEl)
+			.setName("Add new weight")
+			.setDesc("Weight added here overrides everything else.")
+			.addSearch((search) => {
+				new FileSuggest(this.app, search.inputEl);
+				selectedFile = search;
+				search
+					.setPlaceholder("Enter File Name")
+					.onChange(async (value) => {
+						// fileName = value;
+						if (value != "") submitButton.setDisabled(false);
+					});
+			})
+			.addSlider((slider) => {
+				selectedWeight = slider;
+				slider
+					.setLimits(0, 100, 5)
+					.setDynamicTooltip()
+					.setValue(0)
+					.onChange(async (value) => {
+						// fileNodeSize = value;
+					});
+			})
+			.addButton((button) => {
+				submitButton = button;
+				button
+					.setDisabled(true)
+					.setButtonText("Add")
+					.setTooltip("Click to add")
+					.onClick(async () => {
+						let enteredFileData: FileData = {
+							id: selectedFile.getValue(),
+							weight: selectedWeight.getValue(),
+						};
+						this.plugin.settings.manual.push(enteredFileData);
+
+						selectedWeight.setValue(0);
+						selectedFile.setValue("");
+						await this.plugin.saveSettings();
+						this.plugin.recalculateSize();
+					});
+			});
 	}
 }

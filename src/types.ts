@@ -12,6 +12,13 @@ export interface NodeFactorSettings {
 	bwdMultiplier: number;
 
 	lettersPerWt: number;
+
+	manual: Array<FileData>;
+}
+
+export interface FileData {
+	id: string;
+	weight: number;
 }
 
 export const DEFAULT_SETTINGS: NodeFactorSettings = {
@@ -21,4 +28,6 @@ export const DEFAULT_SETTINGS: NodeFactorSettings = {
 	bwdMultiplier: 1,
 
 	lettersPerWt: 0,
+
+	manual: new Array<FileData>(),
 };
