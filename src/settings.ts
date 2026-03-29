@@ -1,6 +1,7 @@
 import {
 	App,
 	ButtonComponent,
+	Notice,
 	PluginSettingTab,
 	SearchComponent,
 	Setting,
@@ -103,19 +104,12 @@ export default class NodeFactorSettingTab extends PluginSettingTab {
 				search
 					.setPlaceholder("Enter File Name")
 					.onChange(async (value) => {
-						// fileName = value;
 						if (value != "") submitButton.setDisabled(false);
 					});
 			})
 			.addSlider((slider) => {
 				selectedWeight = slider;
-				slider
-					.setLimits(0, 100, 5)
-					.setDynamicTooltip()
-					.setValue(0)
-					.onChange(async (value) => {
-						// fileNodeSize = value;
-					});
+				slider.setLimits(0, 100, 5).setDynamicTooltip().setValue(0);
 			})
 			.addButton((button) => {
 				submitButton = button;
@@ -124,15 +118,31 @@ export default class NodeFactorSettingTab extends PluginSettingTab {
 					.setButtonText("Add")
 					.setTooltip("Click to add")
 					.onClick(async () => {
-						let enteredFileData: FileData = {
+						const enteredFileData: FileData = {
 							id: selectedFile.getValue(),
 							weight: selectedWeight.getValue(),
 						};
-						this.plugin.settings.manual.push(enteredFileData);
-
 						selectedWeight.setValue(0);
 						selectedFile.setValue("");
+
+						const fileExists = this.plugin.settings.manual.find(
+							(foundFile) => {
+								foundFile.id == enteredFileData.id;
+							},
+						);
+
+						if (!fileExists) {
+							new Notice(`That file's size has already been entered, 
+								remove it first to change weight.`);
+							return;
+						}
+
+						this.plugin.settings.manual.push(enteredFileData);
 						await this.plugin.saveSettings();
+						new Notice("Manual Size added");
+
+						// Rerender display
+						this.display();
 						this.plugin.recalculateSize();
 					});
 			});
