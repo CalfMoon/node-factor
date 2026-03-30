@@ -129,9 +129,11 @@ export default class NodeFactorSettingTab extends PluginSettingTab {
 							(foundFile) => foundFile.id == enteredFileData.id,
 						);
 
-						if (!fileExists) {
-							new Notice(`That file's size has already been entered, 
-								remove it first to change weight.`);
+						if (fileExists) {
+							new Notice(
+								"That file's size has already been entered," +
+									" remove it first to change weight.",
+							);
 							return;
 						}
 
