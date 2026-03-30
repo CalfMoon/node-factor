@@ -1,7 +1,7 @@
 import { Plugin } from "obsidian";
 
-import { ObsidianNode, NodeFactorSettings, DEFAULT_SETTINGS } from "./types";
-import NodeFactorSettingTab from "./settings";
+import { ObsidianNode, NodeFactorSettings, DEFAULT_SETTINGS } from "types";
+import NodeFactorSettingTab from "settings";
 
 export default class NodeFactor extends Plugin {
 	settings: NodeFactorSettings;
