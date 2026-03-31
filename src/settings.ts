@@ -159,7 +159,9 @@ export default class NodeFactorSettingTab extends PluginSettingTab {
 						.onClick(async () => {
 							this.plugin.settings.manual.remove(value);
 							await this.plugin.saveSettings();
+
 							this.display();
+							this.plugin.recalculateSize();
 						});
 				});
 		});
