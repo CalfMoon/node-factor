@@ -64,7 +64,7 @@ export default class NodeFactor extends Plugin {
 				if (this.sizeCache.get(node.id) != undefined) {
 					weight = this.sizeCache.get(node.id) as number;
 				} else {
-					calculator.calcNodeWeight(node);
+					weight = calculator.calcNodeWeight(node);
 					this.sizeCache.set(node.id, weight);
 				}
 				node.weight = weight;
